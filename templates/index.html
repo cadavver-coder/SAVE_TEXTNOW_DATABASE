@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidenav Dynamic Content</title>
+
+  <!-- Materialize CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    @media only screen and (min-width: 992px) {
+      main {
+        margin-left: 300px;
+      }
+    }
+    .content-section {
+      display: none;
+    }
+    .active-section {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="black">
+    <div class="nav-wrapper" style="background-color: black; position: fixed;">
+      <a href="#!" class="brand-logo">Aplicația Mea</a>
+      <a href="#" data-target="slide-out" class="sidenav-trigger show-on-large">
+        <i class="material-icons">menu</i>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Meniu lateral -->
+  <ul id="slide-out" class="sidenav sidenav-fixed">
+    <li><a href="#home" class="menu-link"><i class="material-icons">home</i>Acasă</a></li>
+    <li><a href="#setari" class="menu-link" onclick="loadAll()"><i class="material-icons">settings</i>Setări</a></li>
+    <li><a href="#profil" class="menu-link" onclick="moreInfo() "><i class="material-icons">fingerprint</i>Database</a></li>
+
+  </ul>
+<style>
+  /* Estimăm înălțimea pe linie (~20px) x 50 linii = 1000px */
+  #cookies_json.limit-height {
+    max-height: 100px;
+    overflow-y: auto !important;
+    resize: vertical; /* opțional: permite redimensionare manuală */
+  }
+
+  /* Poți forța o înălțime inițială confortabilă */
+  #cookies_json.limit-height {
+    min-height: 150px;
+  }
+</style>
+  <!-- Conținut -->
+  <main class="container" style="margin-left: 329px;max-width: auto!important;">
+    <div class="card" style="height: 130px; display: block; padding: 8px; ">
+                    <div class="input-field col s12 m6">
+                        <input id="database_sql" type="text">
+                        <label for="database_sql">database.db</label>
+                        <div style="display: flex; gap: 30px;">
+                        <button class="btn red" onclick="connect_database()" id="connected_server_dataset">Connect / Create Database</button>
+                        <button class="btn yellow" onclick="disconnected()" id="disconnected_server_dataset" style="display: none;">Disconnected</button>
+                        <button class="btn blue" id="download-db" >Download DB</button>
+
+
+                        </div>
+                    </div>
+                </div>
+    <div id="home" class="content-section active-section" >
+        <div class="container">
+            <h4 class="blue-text">Inserare utilizator în SQLite</h4>
+            <div class="card-panel white">
+                <div class="row">
+                    <div class="input-field col s12 m6">
+                        <input id="username" type="text">
+                        <label for="username">Username</label>
+                    </div>
+                    <div class="input-field col s12 m6">
+                        <input id="email_username" type="email">
+                        <label for="email_username">Email username</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="user_agent" type="text">
+                        <label for="user_agent">User Agent</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="proxy" type="text">
+                        <label for="proxy">Proxy</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <textarea id="cookies_json" class="materialize-textarea" style="max-height: 500px!important;overflow-y: auto;"></textarea>
+                        <label for="cookies_json">Cookies (JSON format)</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="password" type="text">
+                        <label for="password">Parola (stocată în clar)</label>
+                    </div>
+                </div>
+                <button class="btn blue" onclick="submitForm()">Trimite</button>
+                <button class="btn grey lighten-1 black-text" onclick="loadLast()">Ultimul</button>
+            </div>
+            <div id="result" class="card-panel teal lighten-5" style="display:none; overflow:auto;"></div>
+        </div>
+    </div>
+
+    <div id="setari" class="content-section">
+      <div class="container">
+  <div class="row">
+    <div class="col s12">
+      <h2 class="section-title">Database Result</h2>
+        <div class="container">
+    <table id="users-table" class="highlight centered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>User Agent</th>
+                <th>Proxy</th>
+                <th>Cookies</th>
+                <th>Email</th>
+                <th>Password</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- datele se vor popula cu JS -->
+        </tbody>
+    </table>
+    </div>
+
+    </div>
+  </div>
+</div>
+    </div>
+
+    <div id="profil" class="content-section">
+      <div class="row">
+            <div class="col s12 m6 offset-m3">
+                <div class="card blue lighten-1">
+                    <div class="card-content white-text center-align">
+                        <span class="card-title">Număr baze de date</span>
+                        <p id="db-count">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel cu lista bazelor de date -->
+        <div class="row">
+            <div class="col s12">
+                <table class="highlight centered db-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nume bază de date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="db-list">
+                        <!-- rânduri vor fi adăugate cu JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </main>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.material.min.js"></script>
+
+  <script>
+    // Inițializează sidenav-ul
+    document.addEventListener('DOMContentLoaded', function() {
+       updateButtonStatus()
+      const elems = document.querySelectorAll('.sidenav');
+      M.Sidenav.init(elems, { edge: 'left', draggable: true });
+
+      // Schimbă conținutul la click
+      const links = document.querySelectorAll('.menu-link');
+      const sections = document.querySelectorAll('.content-section');
+
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // Ascunde toate secțiunile
+          sections.forEach(sec => sec.classList.remove('active-section'));
+
+          // Afișează doar secțiunea dorită
+          const target = link.getAttribute('href').substring(1); // ex: 'home'
+          document.getElementById(target).classList.add('active-section');
+
+          // Închide meniul pe mobil
+          const sidenav = M.Sidenav.getInstance(document.querySelector('.sidenav'));
+          if (sidenav && window.innerWidth < 992) sidenav.close();
+        });
+      });
+    });
+
+
+    function updateButtonStatus() {
+        const button = document.getElementById('connected_server_dataset');
+        const disconnected_server_dataset = document.getElementById('disconnected_server_dataset');
+
+        const token_connected = localStorage.getItem('database_name');
+            if (token_connected) {
+                button.innerText = `Connected  as [ ${token_connected} ]`;
+                button.classList.remove('red');
+                button.classList.add('green');
+                button.disabled = true; 
+                disconnected_server_dataset.style.display = 'block'
+            } else {
+                button.innerText = "Connect / Create Database";
+                button.classList.remove('green');
+                button.classList.add('red');
+                disconnected_server_dataset.style.display = 'none'
+                button.disabled = false; 
+
+
+            }
+    }
+    function disconnected() {
+        localStorage.removeItem('database_name'); // șterge doar tokenul
+        updateButtonStatus(); // actualizează textul butonului imediat
+    }
+
+    function connect_database(){
+        database_name = document.getElementById("database_sql").value
+        connected_server_dataset = document.getElementById("connected_server_dataset")
+        const data = {
+            database_sql: database_name,
+        }
+        fetch("/conn", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            console.log(res)
+            if (res.success) {
+            M.toast({html: "Inserat cu succes!", classes: "green"});
+            localStorage.setItem('database_name', database_name)
+            updateButtonStatus()    
+            } else {
+            M.toast({html: res.error || "Eroare necunoscută", classes: "red"});
+            }
+        });
+        
+    }
+
+
+    function submitForm() {
+     const token_connected = localStorage.getItem('database_name');
+      const data = {
+        database: token_connected,
+        username: document.getElementById("username").value,
+        user_agent: document.getElementById("user_agent").value,
+        proxy: document.getElementById("proxy").value,
+        cookies_json: document.getElementById("cookies_json").value,
+        email_username: document.getElementById("email_username").value,
+        password: document.getElementById("password").value
+      };
+      fetch("/insert", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          M.toast({html: "Inserat cu succes!", classes: "green"});
+          document.getElementById("cookies_json").value = "";
+        } else {
+          M.toast({html: res.error || "Eroare necunoscută", classes: "red"});
+        }
+      });
+    }
+
+    function loadLast() {
+    const databaseName = localStorage.getItem('database_name') || 'default.db';
+    fetch(`/last?db=${encodeURIComponent(databaseName)}`)
+        .then(res => res.json())
+        .then(res => {
+        const container = document.getElementById("result");
+        container.innerHTML = ""; // curățăm conținutul anterior
+
+        if (!res.data) {
+            container.innerHTML = "<p>Nu există date.</p>";
+        } else {
+            const data = res.data;
+            let table = `
+            <table class="striped highlight responsive-table">
+                <thead>
+                <tr><th>Câmp</th><th>Valoare</th></tr>
+                </thead>
+                <tbody>
+            `;
+
+            for (const [key, value] of Object.entries(data)) {
+            // scurtăm câmpurile foarte lungi (ex: cookies_json)
+            const displayValue =
+                typeof value === "string" && value.length > 200
+                ? `<details><summary>${value.slice(0, 200)}...</summary><pre>${value}</pre></details>`
+                : `<pre>${value}</pre>`;
+
+            table += `<tr><td><b>${key}</b></td><td style='max-width: 500px; overflow:hidden'>${displayValue}</td></tr>`;
+            }
+            table += "</tbody></table>";
+            container.innerHTML = table;
+        }
+        container.style.display = "block";
+        })
+        .catch(err => {
+        document.getElementById("result").innerHTML = `<p style="color:red;">Eroare: ${err}</p>`;
+        document.getElementById("result").style.display = "block";
+        });
+}
+
+
+
+function loadAll() {
+    const databaseName = localStorage.getItem('database_name');
+    fetch(`/all?db=${encodeURIComponent(databaseName)}`)
+        .then(res => res.json())
+        .then(res => {
+            const tbody = $("#users-table tbody");
+            if(res.error){
+                M.toast({html: res.error || "Eroare necunoscută", classes: "red"});
+                tbody.append('<tr><td colspan="8">Nu există date</td></tr>');
+                return
+            }
+            
+            tbody.empty();
+            if (!res.data || res.data.length === 0) {
+                tbody.append('<tr><td colspan="8">Nu există date</td></tr>');
+            } else {
+                res.data.forEach(row => {
+                    let truncatedCookies = row.cookies_json;
+                    if (truncatedCookies.length > 50) {
+                        truncatedCookies = truncatedCookies.slice(0, 50) + "...";
+                    }
+
+                    tbody.append(`
+                        <tr>
+                            <td>${row.id}</td>
+                            <td>${row.username}</td>
+                            <td>${row.user_agent}</td>
+                            <td>${row.proxy}</td>
+                            <td class="cookies-cell" style="cursor:pointer; color:blue; text-decoration:underline;">${truncatedCookies}</td>
+                            <td>${row.email_username}</td>
+                            <td>${row.password}</td>
+                            <td>${row.created_at}</td>
+                        </tr>
+                    `);
+                });
+
+                // copy la click pe cookies
+                $(".cookies-cell").on("click", function() {
+                    const index = $(this).parent().index();
+                    const fullCookies = res.data[index].cookies_json;
+                    navigator.clipboard.writeText(fullCookies)
+                        .then(() => M.toast({html: 'Cookies copiate!'}))
+                        .catch(err => alert("Eroare la copiere: " + err));
+                });
+            }
+
+            // Initialize DataTables cu Materialize
+            $('#users-table').DataTable({
+                destroy: true, // pentru a putea re-initializa dacă datele se schimbă
+                pagingType: "full_numbers",
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+            });
+        });
+}
+
+document.getElementById("download-db").addEventListener("click", function() {
+    const dbName = localStorage.getItem("database_name"); // sau orice logică ai
+    if (!dbName) {
+        M.toast({html: "Nu ai selectat o baza de date!"});
+        return;
+    }
+    const url = `/download/${encodeURIComponent(dbName)}`;
+    window.location.href = url;
+});
+
+
+
+function moreInfo() {
+    const databaseName = localStorage.getItem('database_name');
+
+    fetch("/databases")
+        .then(res => res.json())
+        .then(data => {
+            // actualizează numărul de baze de date
+            document.getElementById("db-count").innerText = data.count;
+
+            // reset tabel
+            const tbody = document.getElementById("db-list");
+            tbody.innerHTML = "";
+
+            data.databases.forEach((db, index) => {
+                const connected = (databaseName === db) ? 'Connected' : '';
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        ${db}
+                        ${connected ? `<p style='color:green;margin:0;'>${connected}</p>` : ""}
+                    </td>
+                    <td>
+                        <button 
+                            onclick="deleteDatabase('${db}')" 
+                            style="background:#dc3545;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => console.error("[ERROR]", err));
+}
+
+async function deleteDatabase(filename) {
+    if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
+
+    try {
+        const response = await fetch("/delete_database", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filename })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`✅ ${result.message}`);
+            moreInfo(); // reîncarcă lista după ștergere
+            disconnected()
+        } else {
+            alert(`⚠️ ${result.error || "Delete failed"}`);
+        }
+    } catch (error) {
+        console.error("[DELETE ERROR]", error);
+        alert("❌ Network or server error.");
+    }
+}
+  </script>
+
+</body>
+</html>
